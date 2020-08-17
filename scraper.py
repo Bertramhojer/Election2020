@@ -58,51 +58,53 @@ for candidate in candidates.items():
     state = candidate[1][2]
     name = candidate[1][3]
 
+    try:
+        tweets = tweepy.Cursor(api.user_timeline,
+                                id = twitter_handle,
+                                tweet_mode='extended').items(count)
 
-    tweets = tweepy.Cursor(api.user_timeline,
-                            id = twitter_handle,
-                            tweet_mode='extended').items(count)
+        tweet_list = [tweet for tweet in tweets]
 
-    tweet_list = [tweet for tweet in tweets]
+        for tweet in tweet_list:
 
-    for tweet in tweet_list:
+            if tweet.created_at < endDate and tweet.created_at > startDate:
 
-        if tweet.created_at < endDate and tweet.created_at > startDate:
+                twitter_name = tweet.user.name
+                username = tweet.user.screen_name
+                timestamp = tweet.created_at
+                user_created = tweet.user.created_at
+                tweet_count = tweet.user.statuses_count
+                try:
+                    text = tweet.retweeted_status.full_text
+                    likes = tweet.retweeted_status.favorite_count
+                    retweetcount = tweet.retweeted_status.retweet_count
+                    hashtags = tweet.retweeted_status.entities['hashtags']
+                    retweet = 'YES'
+                except AttributeError:
+                    text = tweet.full_text
+                    likes = tweet.favorite_count
+                    retweetcount = tweet.retweet_count
+                    hashtags = tweet.entities['hashtags']
+                    retweet = 'NO'
 
-            twitter_name = tweet.user.name
-            username = tweet.user.screen_name
-            timestamp = tweet.created_at
-            user_created = tweet.user.created_at
-            tweet_count = tweet.user.statuses_count
-            try:
-                text = tweet.retweeted_status.full_text
-                likes = tweet.retweeted_status.favorite_count
-                retweetcount = tweet.retweeted_status.retweet_count
-                hashtags = tweet.retweeted_status.entities['hashtags']
-                retweet = 'YES'
-            except AttributeError:
-                text = tweet.full_text
-                likes = tweet.favorite_count
-                retweetcount = tweet.retweet_count
-                hashtags = tweet.entities['hashtags']
-                retweet = 'NO'
+                date, time = str(timestamp).split()
 
-            date, time = str(timestamp).split()
+                # get links
+                links = list(re.findall('(https?:\/\/)(\s)?(www\.)?(\s?)(\w+\.)*([\w\-\s]+\/)*([\w-]+)\/?',
+                                    text))
+                if len(links) > 0:
+                    links = [''.join(link) for link in links]
 
-            # get links
-            links = list(re.findall('(https?:\/\/)(\s)?(www\.)?(\s?)(\w+\.)*([\w\-\s]+\/)*([\w-]+)\/?',
-                                text))
-            if len(links) > 0:
-                links = [''.join(link) for link in links]
+                current_tweet = [name, username, twitter_name, text, date, time, hashtags, likes,
+                                    retweetcount, retweet, tweet_count, position,
+                                    party, state, links, user_created]
 
-            current_tweet = [name, username, twitter_name, text, date, time, hashtags, likes,
-                                retweetcount, retweet, tweet_count, position,
-                                party, state, links, user_created]
+                data.loc[len(data)] = current_tweet
 
-            data.loc[len(data)] = current_tweet
-
-            timer += 1
-            print(timer, ')', 'tweet from', twitter_handle, 'filed')
+                timer += 1
+                print(timer, ')', 'tweet from', twitter_handle, 'filed')
+    except:
+        print("No tweets from", twitter_handle)
 
 
 data.to_excel(filename)
