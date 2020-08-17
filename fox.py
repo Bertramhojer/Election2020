@@ -6,25 +6,25 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+
+
 # define function
 def get_polit_fox():
     # url-specification
-    url = "https://www.foxnews.com/politics"
-
-    # request
-    r1 = requests.get(url)
-    r1.status_code
-
-    # save cover-page content
-    coverpage = r1.content
+    req = requests.get("https://www.foxnews.com")
 
     # create soup objects
-    soup = BeautifulSoup(coverpage, 'html5lib')
+    soup = BeautifulSoup(req.content, 'html5lib')
 
     # identify articles
-    news = soup.find_all('h2', class_='title')
+    soup = soup.find_all('h2', class_='title')
     # news is a list of soup-objects - 1 objects pr. article
 
+    news = []
+
+    for i in soup:
+        if i.find('a')['href'].startswith('//www.foxnews.com'):
+            news.append(i)
 
     # create empty lists for handling the data
     news_contents = []
@@ -32,16 +32,14 @@ def get_polit_fox():
     list_titles = []
 
 
-
     for n in np.arange(0, len(news)):
 
         # getting the link
-        initial_link = 'https://www.foxnews.com'
         link = news[n].find('a')['href']
-        link = initial_link + link
+        link = 'https:' + link
         list_links.append(link)
 
-        # getting the title
+        #getting the title
         title = news[n].find('a').get_text()
         list_titles.append(title)
 

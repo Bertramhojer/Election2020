@@ -8,11 +8,13 @@ import demjson, json
 from datetime import datetime
 
 
-def get_polit_cnn():
-    # url-specification
-    req = requests.get("https://edition.cnn.com/politics")
 
-    soup = BeautifulSoup(req.text, 'html.parser')
+def get_news_cnn():
+    # request url
+    req = requests.get("https://edition.cnn.com")
+
+    # create soup objects
+    soup = BeautifulSoup(req.content, 'html5lib')
 
     script = None
     for i in soup.find_all("script"):
@@ -35,10 +37,9 @@ def get_polit_cnn():
     for article in json_data['siblings']['articleList']:
         link = article['uri']
         title = article['headline']
-        if len(re.findall('/politics/', link)) > 0:
+        if link.startswith('/2020/08/'):
             links.append(link)
             list_titles.append(title)
-
 
     for n in np.arange(0, len(links)):
 
@@ -49,7 +50,7 @@ def get_polit_cnn():
 
         article = requests.get(link)
         article_content = article.content
-        soup = BeautifulSoup(article_content, 'html.parser')
+        soup = BeautifulSoup(article_content, 'html5lib')
 
         type0 = soup.find_all('p', class_='zn-body__paragraph speakable')
         type1 = soup.find_all('div', class_='zn-body__paragraph speakable')
@@ -74,7 +75,6 @@ def get_polit_cnn():
 
         news_contents.append(final_article)
 
-
     data = pd.DataFrame(
     {'Title': list_titles,
     'Content': news_contents,
@@ -85,5 +85,6 @@ def get_polit_cnn():
 
     return data
 
-data = get_polit_cnn()
+
+data = get_news_cnn()
 data.to_excel('cnnNews.xlsx')

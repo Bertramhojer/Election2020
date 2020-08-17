@@ -7,20 +7,14 @@ import pandas as pd
 from datetime import datetime
 
 
-def get_polit_politico():
+
+def get_news_politico():
 
     # url-specification
-    url = "https://www.politico.com/politics"
-
-    # request
-    r1 = requests.get(url)
-    r1.status_code
-
-    # save cover-page content
-    coverpage = r1.content
+    req = requests.get("https://www.politico.com")
 
     # create soup objects
-    soup = BeautifulSoup(coverpage, 'html5lib')
+    soup = BeautifulSoup(req.content, 'html5lib')
 
     # identify articles
     news = soup.find_all('a', href=True)
@@ -33,7 +27,7 @@ def get_polit_politico():
 
     for i in news:
         link = i['href']
-        if len(re.findall('https://www.politico.com/news/2020/', i['href'])) > 0:
+        if len(re.findall('https://www.politico.com/news/2020/08', i['href'])) > 0:
             list_links.append(link)
 
     for n in np.arange(0, len(list_links)):
@@ -45,7 +39,9 @@ def get_polit_politico():
 
         # get title
         title = soup_article.find_all('h2', class_='headline')
-        list_titles.append(title)
+        title = str(title)
+        title = str(re.findall('>(.+?)<', title))
+        list_titles.append(title[2:-2])
 
         # unifying the paragraphs into a single text
         list_paragraphs = []
@@ -75,5 +71,6 @@ def get_polit_politico():
     return data
 
 
-data = get_polit_politico()
-print(data)
+data = get_news_politico()
+data = data.drop_duplicates()
+data.to_excel('politicoNews.xlsx')
