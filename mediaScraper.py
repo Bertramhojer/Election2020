@@ -170,7 +170,7 @@ def get_news_cnn():
     for article in json_data['siblings']['articleList']:
         link = article['uri']
         title = article['headline']
-        if link.startswith('/2020/09/'):
+        if link.startswith('/2020/09'):
             links.append(link)
             list_titles.append(title)
 
@@ -647,7 +647,7 @@ def get_news_nytimes():
     for i in news:
         base_link = 'https://www.nytimes.com'
         link = i['href']
-        if link.startswith('/2020/09/'):
+        if link.startswith('/2020/09'):
             if len(re.findall('/podcasts/', link)) > 0:
                 pass
             else:
@@ -722,7 +722,7 @@ def get_polit_nytimes():
     for i in news:
         base_link = 'https://www.nytimes.com'
         link = i['href']
-        if link.startswith('/2020/09/'):
+        if link.startswith('/2020/09'):
             if len(re.findall('/politics/', link)) > 0:
                 link = base_link + link
                 list_links.append(link)
@@ -935,28 +935,46 @@ def get_polit_nbc():
     return data
 
 
+filename = input("Enter date (YYYY-MM-DD): ")
+frontpageFilename = f'/Users/hojer/Desktop/projects/Election2020/frontpage/front-{filename}.xlsx'
+politicsFilename = f'/Users/hojer/Desktop/projects/Election2020/politics/pol-{filename}.xlsx'
+
+print('Scraping frontpages')
 politico = get_news_politico()
+print('Politico ... Done')
 cnn = get_news_cnn()
+print('CNN ... Done')
 fox = get_news_fox()
+print('Fox ... Done')
 nytimes = get_news_nytimes()
+print('New York Times ... Done')
 nbc = get_news_nbc()
+print('NBC ... Done')
 breitbart = get_news_breitbart()
+print('Breitbart ... Done')
 
 frontpages = [politico, cnn, fox, nytimes, nbc, breitbart]
 frontpageData = pd.concat(frontpages)
 frontpageData = frontpageData.drop_duplicates()
 
+print('Scraping politics pages')
 politicoPol = get_polit_politico()
+print('Politico ... Done')
 cnnPol = get_polit_cnn()
+print('CNN ... Done')
 foxPol = get_polit_fox()
+print('Fox ... Done')
 nytimesPol = get_polit_nytimes()
+print('New York Times ... Done')
 nbcPol = get_polit_nbc()
+print('NBC ... Done')
 breitbartPol = get_polit_breitbart()
+print('Breitbart ... Done')
 
 politics = [politicoPol, cnnPol, foxPol, nytimesPol, nbcPol, breitbartPol]
 politicsData = pd.concat(politics)
 politicsData = politicsData.drop_duplicates()
 
 
-frontpageData.to_excel('/Users/hojer/Desktop/projects/Election2020/frontpage/09_09_20.xlsx')
-politicsData.to_excel('/Users/hojer/Desktop/projects/Election2020/politics/09_09_20.xlsx')
+frontpageData.to_excel(frontpageFilename)
+politicsData.to_excel(politicsFilename)
